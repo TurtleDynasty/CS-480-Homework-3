@@ -33,7 +33,8 @@ int main ( int argc, char *argv[] ) {
 	//iterating through blocks
 	for (int i=0; i<num_bytes; i+=BLOCK_SIZE){
 		//data is read into copy data
-		printf("%i\n", read(infile, copy_data, lseek(infile, -1*(i+BLOCK_SIZE), SEEK_END)));
+		lseek(infile, -1*(i+BLOCK_SIZE), SEEK_END);
+		printf("%i\n", read(infile, copy_data, BLOCK_SIZE));
 		//data is reversed
 
 		reverse(copy_data, BLOCK_SIZE);
