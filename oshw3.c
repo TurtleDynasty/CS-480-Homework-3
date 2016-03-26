@@ -20,6 +20,7 @@ int main ( int argc, char *argv[] ) {
 
 	struct stat stat_buff;
 	stat(argv[1], &stat_buff);
+	// subtract 1 from num_bytes because there's an extra last byte for EOF
 	int num_bytes = stat_buff.st_size -1;
 	//printf("number of bytes in infile = %i\n", num_bytes);
 
@@ -31,15 +32,22 @@ int main ( int argc, char *argv[] ) {
 	//array the size of a block of bytes
 	char copy_data[BLOCK_SIZE];
 	//iterating through blocks
-	for (int i=0; i<num_bytes; i+=BLOCK_SIZE){
+	int i;
+	for (i=0; i<num_bytes; i+=BLOCK_SIZE){
 		//data is read into copy data
 		lseek(infile, -1*(i+BLOCK_SIZE), SEEK_END);
-		//printf("%i\n", read(infile, copy_data, BLOCK_SIZE));
+		read(infile, copy_data, BLOCK_SIZE);
 		//data is reversed
 		reverse(copy_data, BLOCK_SIZE);
 		write(outfile, copy_data, BLOCK_SIZE);
-		printf("%i ", i);
+		//this debug print statement will tell you what your loop counter is
+		//printf("%i ", i);
 	}
+	//printf("\n");
+
+	// for (i=0; i<remainder_bytes; i++){
+		
+	// }
 
 	close(infile);
 	close(outfile);
