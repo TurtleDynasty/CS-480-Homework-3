@@ -1,3 +1,4 @@
+// CS 480 homework 3 by David Miller and Austin Abhari
 #include <stdio.h>
 #include <fcntl.h>
 
@@ -20,9 +21,10 @@ int main ( int argc, char *argv[] ) {
 
 	struct stat stat_buff;
 	stat(argv[1], &stat_buff);
-	// subtract 1 from num_bytes because there's an extra last byte for EOF
-	int num_bytes = stat_buff.st_size -1;
-	//printf("number of bytes in infile = %i\n", num_bytes);
+	// if you come out with an extra byte, subtract 1 from num_bytes.
+	// Because there's an extra last byte for EOF or newline
+	int num_bytes = stat_buff.st_size;
+	// printf("number of bytes in infile = %i\n", num_bytes);
 
 	//how many full blocks
 	int num_blocks = num_bytes / BLOCK_SIZE;
@@ -33,25 +35,30 @@ int main ( int argc, char *argv[] ) {
 	char copy_data[BLOCK_SIZE];
 	//iterating through blocks
 	int i;
-	for (i=0; i<num_bytes; i+=BLOCK_SIZE){
+	for ( i=num_blocks-1; i>=0; i-- ){
+		//point to the last block in the file, moving closer and closer to the beginning with each loop pass
+		lseek(infile, i*BLOCK_SIZE + remainder_bytes, SEEK_SET);
 		//data is read into copy data
-		lseek(infile, -1*(i+BLOCK_SIZE), SEEK_END);
 		read(infile, copy_data, BLOCK_SIZE);
 		//data is reversed
 		reverse(copy_data, BLOCK_SIZE);
+		//data is written
 		write(outfile, copy_data, BLOCK_SIZE);
 		//this debug print statement will tell you what your loop counter is
 		//printf("%i ", i);
 	}
-	//printf("\n");
 
-	// for (i=0; i<remainder_bytes; i++){
-		
-	// }
+	//similar process as above but for the remainding bytes that make up a partial block
+	if ( remainder_bytes != 0 ){
+		//printf("%i\n", remainder_bytes);
+		lseek(infile, 0, SEEK_SET);
+		read(infile, copy_data, remainder_bytes);
+		reverse(copy_data, remainder_bytes);
+		write(outfile, copy_data, remainder_bytes);
+	}
 
 	close(infile);
 	close(outfile);
-
 
 	// test code for reversal
 	// char test[10] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
@@ -62,7 +69,7 @@ int main ( int argc, char *argv[] ) {
 	return 0;
 }
 
-void reverse(char original[], int size){
+void reverse( char original[], int size ){
 	int front = 0;
 	int back = size-1;
 	int swap = -1;
